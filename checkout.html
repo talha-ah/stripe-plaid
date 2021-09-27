@@ -14,8 +14,7 @@
     <script src="client.js" defer></script>
     <script>
       ;(async ($) => {
-        const token =
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRhbGhhMTM5Mi5haG1lZEBnbWFpbC5jb20iLCJpZCI6IjYwYTY4ZDNlZTBiZWJmMzE4YWNhNWE2YyIsInJvbGUiOiJ1c2VyIiwiZmlyc3ROYW1lIjoiVGFsaGEiLCJvcmdhbml6YXRpb25JZCI6IjYwNWYwM2M1ZmRhZGExMDViZTE2Yzg0OSIsInBlcm1pc3Npb25zIjp7IlN1cHBseSBDaGFpbiBNYW5hZ2VtZW50IjoiVmlldyIsIkNhdGFsb2ciOiJWaWV3IiwiT3JkZXJzIjoiVmlldyIsIlVzZXIgTWFuYWdlbWVudCI6IlZpZXcifSwiaWF0IjoxNjMyMjk0OTQ4LCJleHAiOjE2MzIzMDIxNDh9.VERVeN3jNzSlHPIJLgmRkCTTvvvvKaUBfZrQ98cbZys"
+        const token = "Bearer token"
         const fetchLinkToken = async () => {
           const response = await fetch(
             "http://localhost:3000/v1/wallet/link-token",
