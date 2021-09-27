@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Accept a payment method</title>
+    <meta name="description" content="A" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="global.css" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+    <script src="client.js" defer></script>
+    <script>
+      ;(async ($) => {
+        const token =
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRhbGhhMTM5Mi5haG1lZEBnbWFpbC5jb20iLCJpZCI6IjYwYTY4ZDNlZTBiZWJmMzE4YWNhNWE2YyIsInJvbGUiOiJ1c2VyIiwiZmlyc3ROYW1lIjoiVGFsaGEiLCJvcmdhbml6YXRpb25JZCI6IjYwNWYwM2M1ZmRhZGExMDViZTE2Yzg0OSIsInBlcm1pc3Npb25zIjp7IlN1cHBseSBDaGFpbiBNYW5hZ2VtZW50IjoiVmlldyIsIkNhdGFsb2ciOiJWaWV3IiwiT3JkZXJzIjoiVmlldyIsIlVzZXIgTWFuYWdlbWVudCI6IlZpZXcifSwiaWF0IjoxNjMyMjk0OTQ4LCJleHAiOjE2MzIzMDIxNDh9.VERVeN3jNzSlHPIJLgmRkCTTvvvvKaUBfZrQ98cbZys"
+        const fetchLinkToken = async () => {
+          const response = await fetch(
+            "http://localhost:3000/v1/wallet/link-token",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: token,
+              },
+            }
+          )
+          const { link_token } = await response.json()
+          console.log("link_token", link_token)
+          return link_token
+        }
+
+        const handler = Plaid.create({
+          token: await fetchLinkToken(),
+          onSuccess: async (publicToken, metadata) => {
+            console.log("public token", publicToken)
+            console.log("accounts", metadata.accounts)
+          },
+          onEvent: (metadata) => {
+            // console.log("on event", metadata)
+          },
+          onExit: (error, metadata) => {
+            console.log("onExit", error, metadata)
+          },
+        })
+        $("#plaid-button").on("click", function (e) {
+          handler.open()
+        })
+      })(jQuery)
+    </script>
+  </head>
+
+  <body>
+    <div id="page">
+      <div id="plaid">
+        <h1>Link bank account with Plaid!</h1>
+        <button id="plaid-button">Link your account with Plaid!</button>
+      </div>
+      <!-- Display a payment form -->
+      <form id="payment-form">
+        <h1>Create payment method with Stripe!</h1>
+        <div id="card-element"><!--Stripe.js injects the Card Element--></div>
+        <button id="submit">
+          <div class="spinner hidden" id="spinner"></div>
+          <span id="button-text">Pay now</span>
+        </button>
+        <p id="card-error" role="alert"></p>
+        <p class="result-message hidden">
+          Payment succeeded, see the result in your
+          <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to
+          pay again.
+        </p>
+      </form>
+    </div>
+  </body>
+</html>
