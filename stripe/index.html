@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stripe Integration</title>
+    <meta name="description" content="A" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="../global.css" />
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
+    <script src="../utils.js" defer></script>
+    <script src="index.js" defer></script>
+  </head>
+
+  <body>
+    <main id="page">
+      <div id="messages"></div>
+
+      <form id="payment-method-form">
+        <h1>Payment Method</h1>
+        <div id="payment-method-element"></div>
+        <button id="payment-method-button">Pay now</button>
+      </form>
+    </main>
+  </body>
+</html>

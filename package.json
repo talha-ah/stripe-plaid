@@ -1,0 +1,22 @@
+{
+  "name": "stripe-plaid-integration",
+  "version": "0.1.0",
+  "description": "Stripe and Plaid integration",
+  "main": "server.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "concurrently \"node server.js\" index.html",
+    "dev": "concurrently \"nodemon server.js\" index.html"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.17.1",
+    "nodemon": "^3.0.1",
+    "plaid": "^15.2.0",
+    "stripe": "^8.202.0"
+  },
+  "devDependencies": {
+    "concurrently": "4.1.2"
+  }
+}

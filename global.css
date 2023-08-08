@@ -58,7 +58,7 @@ body {
   cursor: default;
 }
 
-#payment-form {
+#payment-method-form {
   width: 30vw;
   min-width: 500px;
   align-self: center;
@@ -68,7 +68,7 @@ body {
   padding: 40px;
 }
 
-#payment-form input {
+#payment-method-form input {
   border-radius: 6px;
   margin-bottom: 6px;
   padding: 12px;
@@ -94,15 +94,7 @@ body {
   display: none;
 }
 
-#card-error {
-  color: rgb(105, 115, 134);
-  text-align: left;
-  font-size: 13px;
-  line-height: 17px;
-  margin-top: 12px;
-}
-
-#card-element {
+#payment-method-element {
   border-radius: 4px 4px 0 0;
   padding: 12px;
   border: 1px solid rgba(50, 50, 93, 0.1);
@@ -116,7 +108,7 @@ body {
 }
 
 /* Buttons and links */
-#payment-form button {
+#payment-method-button {
   background: #5469d4;
   color: #ffffff;
   font-family: Arial, sans-serif;
@@ -131,10 +123,10 @@ body {
   box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
   width: 100%;
 }
-#payment-form button:hover {
+#payment-method-button:hover {
   filter: contrast(115%);
 }
-#payment-form button:disabled {
+#payment-method-button:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -210,7 +202,7 @@ body {
 }
 
 @media only screen and (max-width: 600px) {
-  #payment-form {
+  #payment-method-button {
     width: 80vw;
   }
 }
