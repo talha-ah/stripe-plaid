@@ -63,7 +63,15 @@ app.get("/link-token", async (req, res) => {
 })
 
 app.post("/subscribe", async (req, res) => {
-  const { pending } = req.body
+  const { trial_days } = req.body
+
+  // When I create a 'pending' subscription without trial days, it returns the subscription.latest_invoice.payment_intent but with trial days, it doesn't return it.
+  // So, And hence it doesn't return the client secret for trial subscriptions.
+
+  // In case of trial: Subscription status is trialing Invoice status is paid Payment intent is not present In case of no trial: Subscription status is incomplete Invoice status is open Payment intent is present and inside it, the client_secret as well!
+
+  // You can use SetupIntents for subscriptions. Stripe automatically creates SetupIntents for subscriptions that don’t require an initial payment. The authentication and authorization process also completes at this point, if required.
+  // https://stripe.com/docs/billing/subscriptions/overview#non-payment
 
   const subscription = await stripe.subscriptions.create({
     customer: CUSTOMER_ID,
@@ -72,15 +80,43 @@ app.post("/subscribe", async (req, res) => {
         price: PRICE_ID,
       },
     ],
+    trial_settings: {
+      end_behavior: {
+        missing_payment_method: "cancel",
+      },
+    },
+    trial_period_days: trial_days,
     payment_behavior: "default_incomplete",
-    expand: ["latest_invoice.payment_intent"],
+    expand: ["latest_invoice.payment_intent", "pending_setup_intent"],
     payment_settings: { save_default_payment_method: "on_subscription" },
   })
 
-  res.send({
-    subscriptionId: subscription.id,
-    clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-  })
+  if (
+    subscription.latest_invoice &&
+    subscription.latest_invoice.payment_intent &&
+    subscription.latest_invoice.payment_intent.client_secret
+  ) {
+    // https://stripe.com/docs/billing/subscriptions/build-subscriptions?ui=elements
+    return res.send({
+      status: subscription.status,
+      subscriptionId: subscription.id,
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+    })
+  }
+
+  if (
+    subscription.pending_setup_intent &&
+    subscription.pending_setup_intent.client_secret
+  ) {
+    // https://stripe.com/docs/billing/subscriptions/overview#non-payment
+    return res.send({
+      status: subscription.status,
+      subscriptionId: subscription.id,
+      clientSecret: subscription.pending_setup_intent.client_secret,
+    })
+  }
+
+  res.send({ status: subscription.status, subscriptionId: subscription.id })
 })
 
 app.listen(4242, () => console.log("Node server listening on port 4242!"))

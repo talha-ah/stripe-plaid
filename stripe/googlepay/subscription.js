@@ -1,13 +1,16 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { clientSecret } = await fetch("http://localhost:4242/subscribe", {
-    method: "POST",
-    body: JSON.stringify({
-      pending: true,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((res) => res.json())
+  const { clientSecret, status } = await fetch(
+    "http://localhost:4242/subscribe",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        trial_days: 10,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  ).then((res) => res.json())
 
   const options = {
     locale: "en",
@@ -41,14 +44,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     console.log("event", event)
 
-    const { error } = await stripe.confirmPayment({
-      //`Elements` instance that was used to create the Payment Element
-      elements,
-      confirmParams: {
-        return_url:
-          "https://aa9f-2a04-4a43-968f-ffc0-2553-bf08-8e9-8cf7.ngrok-free.app/stripe/googlepay/subscription-redirect.html",
-      },
-    })
+    let error = null
+
+    if (status === "trialing") {
+      // https://stripe.com/docs/billing/subscriptions/overview#non-payment
+      const setupIntent = await stripe.confirmSetup({
+        //`Elements` instance that was used to create the Payment Element
+        elements,
+        confirmParams: {
+          return_url:
+            "https://8805-2a04-4a43-968f-ffc0-1c9a-e9ac-d3f0-f4a1.ngrok-free.app/stripe/googlepay/subscription-redirect.html",
+        },
+      })
+      error = setupIntent.error
+    } else {
+      const PaymentIntent = await stripe.confirmPayment({
+        //`Elements` instance that was used to create the Payment Element
+        elements,
+        confirmParams: {
+          return_url:
+            "https://8805-2a04-4a43-968f-ffc0-1c9a-e9ac-d3f0-f4a1.ngrok-free.app/stripe/googlepay/subscription-redirect.html",
+        },
+      })
+      error = PaymentIntent.error
+    }
 
     if (error) {
       // This point will only be reached if there is an immediate error when
