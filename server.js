@@ -62,6 +62,29 @@ app.get("/link-token", async (req, res) => {
   res.send({ response: "refused" })
 })
 
+app.post("/payment-method", async (req, res) => {
+  const { payment_method } = req.body
+
+  const setupIntent = await stripe.setupIntents.create({
+    confirm: true,
+    customer: CUSTOMER_ID,
+    payment_method: payment_method,
+    payment_method_types: ["card"],
+  })
+
+  console.log("setup-intent", setupIntent)
+
+  if (setupIntent.status === "requires_action") {
+    return res.send({
+      status: setupIntent.status,
+      next_action: setupIntent.next_action,
+      client_secret: setupIntent.client_secret,
+    })
+  }
+
+  return res.send({ success: true })
+})
+
 app.post("/subscribe", async (req, res) => {
   const { trial_days } = req.body
 

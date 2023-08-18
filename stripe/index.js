@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     payWithCard(stripe, card)
   })
 
+  let payment_method = null
+  const addButton = document.getElementById("add-payment-method")
+
   // Calls stripe.confirmCardPayment
   // If the card requires authentication Stripe shows a pop-up modal to
   // prompt the user to enter authentication details without leaving your page.
@@ -48,11 +51,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
       })
       .then(function (result) {
-        console.log("payment method", result)
-        addMessage("Payment method created: " + result.paymentMethod.id)
+        payment_method = result.paymentMethod.id
+        addButton.style.display = "block"
         loading(false)
+
+        addMessage("Payment method created: " + result.paymentMethod.id)
+        console.log("payment method", result)
       })
   }
+
+  // Add payment method to the customer
+  addButton.addEventListener("click", async () => {
+    if (payment_method) {
+      const response = await fetch("http://localhost:4242/payment-method", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_method }),
+      }).then((res) => res.json())
+
+      console.log("payment-method-response", response)
+      if (response && response.status === "requires_action") {
+        const { error: errorAction, setupIntent } =
+          await stripe.handleNextAction({
+            clientSecret: response.client_secret,
+            return_url: "http://localhost:4242/stripe/index.html",
+          })
+
+        console.log("handle-next-action", errorAction, setupIntent)
+      }
+    } else {
+      addMessage("No payment method to add")
+    }
+  })
 
   /* ------- UI helpers ------- */
   // Show a spinner on payment submission
