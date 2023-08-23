@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { clientSecret, status } = await fetch(
-    "http://localhost:4242/subscribe",
+  const { client_secret, status } = await fetch(
+    `https://${window.location.hostname}/subscribe`,
     {
       method: "POST",
       body: JSON.stringify({
+        pending: true,
         trial_days: 10,
       }),
       headers: {
@@ -14,19 +15,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const options = {
     locale: "en",
-    clientSecret: clientSecret,
+    clientSecret: client_secret,
     // Fully customizable with appearance API.
     appearance: {
       theme: "stripe",
     },
   }
 
-  const { STRIPE_PUBLIC } = await fetch("http://localhost:4242/config").then(
-    (res) => res.json()
-  )
+  const { STRIPE_PUBLIC } = await fetch(
+    `https://${window.location.hostname}/config`
+  ).then((res) => res.json())
 
   console.log("google-pay-subscription.js", STRIPE_PUBLIC)
-  console.log("clientSecret", clientSecret)
+  console.log("client_secret", client_secret)
 
   const stripe = Stripe(STRIPE_PUBLIC)
 
@@ -52,8 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         //`Elements` instance that was used to create the Payment Element
         elements,
         confirmParams: {
-          return_url:
-            "https://8805-2a04-4a43-968f-ffc0-1c9a-e9ac-d3f0-f4a1.ngrok-free.app/stripe/googlepay/subscription-redirect.html",
+          return_url: `https://${window.location.hostname}/stripe/googlepay/subscription-redirect.html`,
         },
       })
       error = setupIntent.error
@@ -62,8 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         //`Elements` instance that was used to create the Payment Element
         elements,
         confirmParams: {
-          return_url:
-            "https://8805-2a04-4a43-968f-ffc0-1c9a-e9ac-d3f0-f4a1.ngrok-free.app/stripe/googlepay/subscription-redirect.html",
+          return_url: `https://${window.location.hostname}/stripe/googlepay/subscription-redirect.html`,
         },
       })
       error = PaymentIntent.error

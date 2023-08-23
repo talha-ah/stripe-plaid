@@ -1,11 +1,14 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const fetchLinkToken = async () => {
-    const { link_token } = await fetch(`http://localhost:4242/link-token`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then((res) => res.json())
+    const { link_token } = await fetch(
+      `https://${window.location.hostname}/link-token`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    ).then((res) => res.json())
     console.log("plaid.js", link_token)
     return link_token
   }

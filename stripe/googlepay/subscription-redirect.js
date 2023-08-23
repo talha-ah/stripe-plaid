@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { STRIPE_PUBLIC } = await fetch("http://localhost:4242/config").then(
-    (res) => res.json()
-  )
+  const { STRIPE_PUBLIC } = await fetch(
+    `https://${window.location.hostname}/config`
+  ).then((res) => res.json())
 
   console.log("google-pay-subscription-hook.js", STRIPE_PUBLIC) // Initialize Stripe.js using your publishable key
 
@@ -9,19 +9,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Retrieve the "payment_intent_client_secret" query parameter appended to
   // your return_url by Stripe.js
-  const clientSecret = new URLSearchParams(window.location.search).get(
+  const client_secret = new URLSearchParams(window.location.search).get(
     "payment_intent_client_secret"
   )
   const setup_intent_client_secret = new URLSearchParams(
     window.location.search
   ).get("setup_intent_client_secret")
 
-  console.log("clientSecret", clientSecret)
+  console.log("client_secret", client_secret)
   console.log("setup_intent_client_secret", setup_intent_client_secret) // incase of trialing subscription
 
-  if (clientSecret) {
+  if (client_secret) {
     // Retrieve the PaymentIntent
-    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
+    stripe.retrievePaymentIntent(client_secret).then(({ paymentIntent }) => {
       console.log("paymentIntent", paymentIntent)
       // Inspect the PaymentIntent `status` to indicate the status of the payment
       // to your customer.

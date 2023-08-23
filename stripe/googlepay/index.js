@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { STRIPE_PUBLIC } = await fetch("http://localhost:4242/config").then(
-    (res) => res.json()
-  )
+  const { STRIPE_PUBLIC } = await fetch(
+    `https://${window.location.hostname}/config`
+  ).then((res) => res.json())
 
   console.log("google-pay.js", STRIPE_PUBLIC)
 
@@ -44,8 +44,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   paymentRequest.on("paymentmethod", async (e) => {
     // Make a call to the server to create a new
     // payment intent and store its client_secret.
-    const { error: backendError, clientSecret } = await fetch(
-      "/payment-intent",
+    const { error: backendError, client_secret } = await fetch(
+      `https://${window.location.hostname}/payment-intent`,
       {
         method: "POST",
         headers: {
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Confirm the PaymentIntent without handling potential next actions (yet).
     const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
+      client_secret,
       {
         payment_method: e.paymentMethod.id,
       },
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (paymentIntent.status === "requires_action") {
       // Let Stripe.js handle the rest of the payment flow.
       const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret
+        client_secret
       )
       if (error) {
         // The payment failed -- ask your customer for a new payment method.

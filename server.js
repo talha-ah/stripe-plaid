@@ -46,7 +46,7 @@ app.post("/payment-intent", async (req, res) => {
     payment_method_types: [paymentMethodType],
   })
 
-  res.send({ clientSecret: paymentIntent.client_secret })
+  res.send({ client_secret: paymentIntent.client_secret })
 })
 
 app.get("/link-token", async (req, res) => {
@@ -86,7 +86,7 @@ app.post("/payment-method", async (req, res) => {
 })
 
 app.post("/subscribe", async (req, res) => {
-  const { trial_days } = req.body
+  const { trial_days, pending, payment_method } = req.body
 
   // When I create a 'pending' subscription without trial days, it returns the subscription.latest_invoice.payment_intent but with trial days, it doesn't return it.
   // So, And hence it doesn't return the client secret for trial subscriptions.
@@ -109,10 +109,19 @@ app.post("/subscribe", async (req, res) => {
       },
     },
     trial_period_days: trial_days,
-    payment_behavior: "default_incomplete",
-    expand: ["latest_invoice.payment_intent", "pending_setup_intent"],
-    payment_settings: { save_default_payment_method: "on_subscription" },
+    ...(pending
+      ? {
+          payment_behavior: "default_incomplete",
+          expand: ["latest_invoice.payment_intent", "pending_setup_intent"],
+          payment_settings: { save_default_payment_method: "on_subscription" },
+        }
+      : {
+          default_payment_method: payment_method,
+          expand: ["latest_invoice.payment_intent", "pending_setup_intent"],
+        }),
   })
+
+  console.log("subscription", subscription)
 
   if (
     subscription.latest_invoice &&
@@ -121,9 +130,10 @@ app.post("/subscribe", async (req, res) => {
   ) {
     // https://stripe.com/docs/billing/subscriptions/build-subscriptions?ui=elements
     return res.send({
-      status: subscription.status,
       subscriptionId: subscription.id,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      status: subscription.latest_invoice.payment_intent.status,
+      next_action: subscription.latest_invoice.payment_intent.next_action,
+      client_secret: subscription.latest_invoice.payment_intent.client_secret,
     })
   }
 
@@ -135,7 +145,8 @@ app.post("/subscribe", async (req, res) => {
     return res.send({
       status: subscription.status,
       subscriptionId: subscription.id,
-      clientSecret: subscription.pending_setup_intent.client_secret,
+      next_action: subscription.pending_setup_intent.next_action,
+      client_secret: subscription.pending_setup_intent.client_secret,
     })
   }
 

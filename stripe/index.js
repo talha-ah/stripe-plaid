@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { STRIPE_PUBLIC } = await fetch("http://localhost:4242/config").then(
-    (res) => res.json()
-  )
+  const { STRIPE_PUBLIC } = await fetch(
+    `https://${window.location.hostname}/config`
+  ).then((res) => res.json())
 
   console.log("payment-method.js", STRIPE_PUBLIC)
 
@@ -34,8 +34,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     payWithCard(stripe, card)
   })
 
+  let canSubscribe = false
   let payment_method = null
   const addButton = document.getElementById("add-payment-method")
+  const subscriptionButton = document.getElementById("create subscription")
 
   // Calls stripe.confirmCardPayment
   // If the card requires authentication Stripe shows a pop-up modal to
@@ -63,21 +65,57 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Add payment method to the customer
   addButton.addEventListener("click", async () => {
     if (payment_method) {
-      const response = await fetch("http://localhost:4242/payment-method", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_method }),
-      }).then((res) => res.json())
+      const response = await fetch(
+        `https://${window.location.hostname}/payment-method`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payment_method }),
+        }
+      ).then((res) => res.json())
 
       console.log("payment-method-response", response)
       if (response && response.status === "requires_action") {
         const { error: errorAction, setupIntent } =
           await stripe.handleNextAction({
             clientSecret: response.client_secret,
-            return_url: "http://localhost:4242/stripe/index.html",
+            return_url: "https://localhost:4242/stripe/index.html",
           })
 
         console.log("handle-next-action", errorAction, setupIntent)
+
+        if (errorAction) {
+          addMessage(errorAction.message)
+        } else {
+          canSubscribe = true
+          subscriptionButton.style.display = "block"
+        }
+      }
+    } else {
+      addMessage("No payment method to add")
+    }
+  })
+
+  // Create subscription
+  subscriptionButton.addEventListener("click", async () => {
+    if (payment_method && canSubscribe) {
+      const response = await fetch(
+        `https://${window.location.hostname}/subscribe`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payment_method, pending: false }),
+        }
+      ).then((res) => res.json())
+
+      console.log("subscription", response)
+      if (response && response.status === "requires_action") {
+        const { error: errorAction, paymentIntent } =
+          await stripe.confirmCardPayment(response.client_secret)
+
+        console.log("confirm-card-payment", errorAction, paymentIntent)
+
+        if (errorAction) addMessage(errorAction.message)
       }
     } else {
       addMessage("No payment method to add")
