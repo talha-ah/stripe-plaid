@@ -98,17 +98,9 @@ app.post("/subscribe", async (req, res) => {
 
   const subscription = await stripe.subscriptions.create({
     customer: CUSTOMER_ID,
-    items: [
-      {
-        price: PRICE_ID,
-      },
-    ],
-    trial_settings: {
-      end_behavior: {
-        missing_payment_method: "cancel",
-      },
-    },
+    items: [{ price: PRICE_ID }],
     trial_period_days: trial_days,
+    trial_settings: { end_behavior: { missing_payment_method: "cancel" } },
     ...(pending
       ? {
           payment_behavior: "default_incomplete",
@@ -123,10 +115,15 @@ app.post("/subscribe", async (req, res) => {
 
   console.log("subscription", subscription)
 
+  // for non trial subscriptions
   if (
     subscription.latest_invoice &&
     subscription.latest_invoice.payment_intent &&
-    subscription.latest_invoice.payment_intent.client_secret
+    subscription.latest_invoice.payment_intent.client_secret &&
+    (subscription.latest_invoice.payment_intent.next_action ||
+      subscription.latest_invoice.payment_intent.status === "requires_action" ||
+      subscription.latest_invoice.payment_intent.status ===
+        "requires_confirmation")
   ) {
     // https://stripe.com/docs/billing/subscriptions/build-subscriptions?ui=elements
     return res.send({
@@ -137,9 +134,12 @@ app.post("/subscribe", async (req, res) => {
     })
   }
 
+  // for trial subscriptions
   if (
     subscription.pending_setup_intent &&
-    subscription.pending_setup_intent.client_secret
+    subscription.pending_setup_intent.client_secret &&
+    (subscription.pending_setup_intent.status === "requires_confirmation" ||
+      subscription.pending_setup_intent.next_action)
   ) {
     // https://stripe.com/docs/billing/subscriptions/overview#non-payment
     return res.send({
