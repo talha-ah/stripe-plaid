@@ -149,7 +149,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         console.log("confirm-card-payment", errorAction, paymentIntent)
 
+        await fetch(`https://${window.location.hostname}/confirm`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payment_intent_id: paymentIntent.id }),
+        }).then((res) => res.json())
+
         if (errorAction) addMessage(errorAction.message)
+        else addMessage("Payment successful")
+      } else {
+        addMessage("Payment successful")
+
+        await fetch(`https://${window.location.hostname}/confirm`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payment_intent_id: response.paymentIntent }),
+        }).then((res) => res.json())
       }
     } else {
       addMessage("No payment method to add")

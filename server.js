@@ -193,16 +193,11 @@ app.post("/confirm", async (req, res) => {
   const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id)
   if (!paymentIntent) throw new Error("Payment Intent not found")
 
-  const invoice = await stripe.invoices.retrieve(paymentIntent.invoice)
-  if (!invoice) throw new Error("Invoice not found")
+  console.log("payment intent", paymentIntent)
 
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
-  if (!subscription) throw new Error("Subscription not found")
+  console.log("balance paid", paymentIntent.amount / 100)
 
-  // add the subscription to the organization in the database
-  // not needed in this example project
-
-  res.send({ subscriptionId: subscription.id })
+  res.send({ amount: paymentIntent.amount / 100 })
 })
 
 app.listen(4242, () => console.log("Node server listening on port 4242!"))
