@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          paymentMethodType: "card",
+          payment_method_type: "card",
           currency: paymentRequestPayload.currency,
           amount: paymentRequestPayload.total.amount,
         }),
